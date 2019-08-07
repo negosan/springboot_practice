@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neusoft.busmis.security.dao.IFunctionDao">
+	<cache/>
+	
+	<resultMap id="FunctionResultMap" type="Function">
+		<id column="FUNNO" property="funno"/>
+		<result column="FUNNAME" property="funname"/>
+		<result column="FUNURL" property="funurl"/>
+	</resultMap>
+	
+	<resultMap id="FunctionResultMapWithRelationWithNestedResultMap" type="Function" extends="FunctionResultMap">
+		<association property="module" resultMap="com.neusoft.busmis.security.dao.IModuleDao.ModuleResultMap"/>
+	</resultMap>
+
+	<resultMap id="FunctionResultMapWithRelationWithNestedSelect" type="Function" extends="FunctionResultMap">
+		<association property="module" column="MNO" select="com.neusoft.busmis.security.dao.IModuleDao.selectByNo"/>
+	</resultMap>
+	
+
+	<insert id="create">
+		insert into systemfunction values(#{module.mno},#{funname},#{funurl})
+	</insert>
+	
+	<delete id="delete" flushCache="true">
+		delete from systemfunction where FUNNO=#{funno}
+	</delete>
+	
+	<update id="update" flushCache="true">
+		update systemfunction set MNO=#{module.mno},FUNNAME=#{funname},FUNURL=#{funurl}
+		where FUNNO=#{funno}
+	</update>
+
+	<select id="selectByNo">
+		select FUNNO funno,MNO mno,FUNNAME funname,FUNURL funurl from systemfunction
+		where FUNNO=#{funno}
+	</select>
+	
+	<select id="selectListByAll" resultMap="FunctionResultMap">
+		select * from systemfunction
+	</select>
+	
+	<select id="selectListByAllWithNestedResultMap" resultMap="FunctionResultMapWithRelationWithNestedResultMap">
+		select a.*,b.* from systemfunction a inner join systemmodule b
+		on a.MNO=b.MNO
+	</select>
+	
+	<select id="selectListByAllWithNestedSelect" resultMap="FunctionResultMapWithRelationWithNestedSelect">
+		select * from systemfunction
+	</select>
+	
+	<select id="selectCountByAll">
+		select IFNULL(count(FUNNO),0) from systemfunction
+	</select>
+	
+<!--//取得指定模块系统功能列表,参数:moduleNo 模块编号
+	public List<FunctionModel> selectListByModule(int moduleNo) throws Exception;
+	//取得指定模块的功能的个数,参数:moduleNo 模块编号
+	public int selectCountByModule(int moduleNo) throws Exception; -->
+	
+	<select id="selectListByModule" resultMap="FunctionResultMap" >
+		select * from systemfunction where MNO=#{mno}
+	</select>
+	
+	<select id="selectCountByModule">
+		select IFNULL(count(FUNNO),0) from systemfunction 
+		where MNO=#{mno}
+	</select>
+	
+</mapper>

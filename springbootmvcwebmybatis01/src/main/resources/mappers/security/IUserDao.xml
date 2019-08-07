@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neusoft.busmis.security.dao.IUserDao">
+
+	<cache/>
+	<resultMap id="UserResultMap" type="User">
+		<id column="USERID" property="id" />
+  		<result column="UserPASSWORD" property="password"/>
+  		<result column="UserName" property="name"/>
+  		<result column="UserAge" property="age"/>
+  		<result column="JoinDate" property="joindate"/>
+  		<result column="UserStatus" property="status"/>
+	</resultMap>
+	
+	<insert id="create" parameterType="User" flushCache="true">
+		insert into userinfo (USERID,USERPASSWORD,USERNAME,USERAGE,JOINDATE,USERSTATUS)
+		values (#{id},#{password},#{name},#{age},#{joindate},'N')
+	</insert>
+	
+	<insert id="createWithPhoto" parameterType="User" flushCache="true">
+		insert into userinfo (USERID,USERPASSWORD,USERNAME,USERAGE,JOINDATE,USERSTATUS,PHOTO,PHOTOFILENAME,PHOTOCONTENTTYPE)
+		values (#{id},#{password},#{name},#{age},#{joindate},'N',#{photo},#{photoFilename},#{photoContentType})
+	</insert>
+	
+	<update id="update">
+		update userinfo set UserPASSWORD=#{password},UserNAME=#{name},UserAge=#{age},JoinDate=#{joindate},UserStatus=#{status}
+		where USERID=#{id}
+	</update>
+	
+	<delete id="delete">
+		delete from userinfo where USERID=#{id}
+	</delete>
+	
+	<select id="selectListByAll" resultMap="UserResultMap">
+		select  * from userinfo
+		
+	</select>
+	
+	<select id="selectListByAllWithPage" resultMap="UserResultMap">
+		select  * from userinfo
+		limit #{start},#{rows}
+	</select>
+	
+
+	<select id="selectById"  resultMap="UserResultMap">
+		select USERID,USERPASSWORD,USERNAME,USERAGE,JOINDATE,USERSTATUS,PHOTOFILENAME,PHOTOCONTENTTYPE from userinfo
+		where USERID =#{id} 
+	</select>
+	
+	
+<!--//为用户增加角色
+	//每次增加一个
+	public void addRole(@Param("id")String id,@Param("rno") int rno) throws Exception;
+	//每次增加多个
+	public void addRole(@Param("id")String id,@Param("rnoList") int[] rnoList) throws Exception;
+	
+	//取得指定用户角色列表
+	public List<RoleList> selectRoleListByUser(String id) throws Exception;
+	//判断指定用户是否有指定角色
+	public int selectCountByUserAndRoles(@Param("id")String id,@Param("rno") int rno) throws Exception; -->
+	
+	<insert id="addRole">
+		insert into USERROLE values(#{id},#{rno})
+	</insert>
+	
+	<insert id="addRoles">
+		insert into USERROLE values
+		<foreach item="rno" collection="rnoList"  separator=",">
+				(#{id},#{rno})
+		</foreach>
+	</insert>
+	
+	<delete id="deleteRoles">
+		delete from USERROLE where USERID=#{id}
+	</delete>
+	
+	<select id="selectCountByUserAndRoles">
+		
+	</select>
+	
+	<select id="selectRoleListByUser"  resultMap="UserResultMap">
+		
+	</select>
+	
+	<select id="selectListByCondition" resultMap="UserResultMap">
+		select *
+		from userinfo
+		<where>
+		<if test="rno!=0">
+			and USERID in (select USERID from userrole where RNO=#{rno})
+		</if>
+		<if test="keyName!=null and keyName!=''">
+			and UserNAME like #{keyName}
+		</if>
+		<if test="minAge!=0">
+			and UserAge &gt;#{minAge}
+		</if>
+		<if test="maxAge!=0">
+			and UserAge &lt;=#{maxAge}
+		</if> 
+		<if test="startDate!=null">
+			and JOINDATE &gt;=#{satrtDate}
+		</if >
+		<if test="endDate!=null">
+			and JOINDATE &lt;=#{endDate}
+		</if>
+		</where>
+	</select>
+	
+	<!-- 取得指定用户的模块列表 -->
+	<select id="selectModuleListByUser" resultMap="com.neusoft.busmis.security.dao.IModuleDao.ModuleResultMapWithCollectionByNestedResultMap">
+		select a.*,b.* from systemmodule a inner join systemfunction b on a.MNO=b.MNO
+		where a.MNO in 
+		(select MNO from RoleModule where RNO in
+		(select RNO from userrole where USERID=#{id}))
+	</select>
+	
+</mapper>

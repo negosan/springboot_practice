@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neusoft.busmis.security.dao.IRoleDao">
+  
+  <cache/>
+  
+  <resultMap id="RoleResultMap" type="Role">
+	<id column="RNO" property="rno"/>
+	<result column="RNAME" property="rname"/>
+  </resultMap>
+  
+  <resultMap id="RoleResultMapWithUserByNestedSelect" type="Role" extends="RoleResultMap">
+	<collection property="users" column="USERID" select="com.neusoft.busmis.security.dao.IUserDao.selectById">
+	</collection>
+  </resultMap>
+  
+  <resultMap id="RoleResultMapWithModuleByNestedSelect" type="Role" extends="RoleResultMap">
+	<collection property="modules" column="MNO" select="com.neusoft.busmis.security.dao.IModuleDao.selectByNo">
+	</collection>
+  </resultMap>
+  
+  <resultMap id="RoleResultMapWithCollectionByNestedResultMap" type="Role" extends="RoleResultMap">
+	<collection property="modules"  resultMap="com.neusoft.busmis.security.dao.IModuleDao.ModuleResultMap"></collection>
+  </resultMap>
+  
+  
+  <insert id="create"  keyProperty="rno"   keyColumn="RNO" useGeneratedKeys="true" flushCache="true" >
+   insert into Roles (RNAME) values (#{rname})
+  </insert>
+  
+  
+  <update id="update" flushCache="true">
+   update roles set RNAME=#{rname} where RNO=#{rno}
+  </update>
+  
+  <delete id="delete" flushCache="true">
+   delete from Roles where RNO=#{rno}
+  </delete>
+  
+<!--//为指定角色删除相关模块权限
+public void deleteModules(int rno) throws Exception; 
+-->
+  <delete id="deleteModules" flushCache="true">
+   delete from RoleModule where RNO=#{rno}
+  </delete>
+  
+  <select id="selectListByAll" resultMap="RoleResultMap">
+   select * from Roles
+  </select>
+  
+<!--   //取得角色列表和其拥有的模块权限
+  public List<RoleModel> selectListByAllWithCollectionByNestedResultMap() throws Exception; -->
+
+  <select id="selectListByAllWithCollectionByNestedResultMap" resultMap="RoleResultMapWithCollectionByNestedResultMap">
+    select a.RNO,b.MNAME from ROLEMODULE a inner join SYSTEMMODULE b on a.MNO=b.MNO
+    where b.MNO in
+    (select b.MNO from Roles a inner join ROLEMODULE b on a.RNO=b.RNO)
+										
+  </select>
+
+<!--   
+  	//取得指定用户的角色列表
+	public List<RoleModel> getListByUser(String userid) throws Exception;
+	//取得指定模块的角色列表
+	public List<RoleModel> getListByModule(int mno ) throws Exception; -->
+  <select id="selectListByUser" resultMap="RoleResultMapWithUserByNestedSelect">
+   select * from Roles 
+  </select>
+
+  <select id="selectListByModule" resultMap="RoleResultMapWithModuleByNestedSelect">
+   select * from Roles 
+  </select>
+
+<!--//取得指定的角色
+	public RoleModel selectByNo(int rno) throws Exception;
+	
+	//取得所有角色的个数
+	public int selectCountByAll() throws Exception; -->
+	
+  <select id="selectByNo" resultMap="RoleResultMap">
+   select RNAME from Roles where RNO=#{rno}
+  </select>
+	
+  <select id="selectCountByAll" resultMap="RoleResultMap" >
+   select IFNULL(count(RNO),0) from Roles 
+  </select>	
+  
+  
+<!--   //为指定角色增加相关模块权限
+	public void addModules(@Param("rno")int rno,@Param("mnoList")int[] mnoList) throws Exception; -->
+ 
+ <insert id="addModules" >
+   insert into ROLEMODULE values 
+   <foreach item="mno" collection="mnoList"  separator=",">
+			(#{rno},#{mno})
+  </foreach>
+  </insert>
+ 
+</mapper>

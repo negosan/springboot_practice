@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neusoft.busmis.security.dao.IModuleDao">
+
+	<resultMap id="ModuleResultMap" type="Module">
+		<id column="MNO" property="mno"/>
+		<result column="MNAME" property="mname"/>
+	</resultMap>
+	
+	<resultMap id="ModuleResultMapWithCollectionByNestedSelect" type="Module" extends="ModuleResultMap">
+		<collection property="functions" column="MNO" select="com.neusoft.busmis.security.dao.IFunctionDao.selectListByModule"></collection>
+	</resultMap>
+	
+	<resultMap id="ModuleResultMapWithCollectionByNestedResultMap" type="Module" extends="ModuleResultMap">
+		<collection property="functions" resultMap="com.neusoft.busmis.security.dao.IFunctionDao.FunctionResultMap"></collection>
+	</resultMap>
+
+	<insert id="create">
+		insert into systemmodule  values(#{mno},#{mname})
+	</insert>
+	
+	<delete id="delete" flushCache="true">
+		delete from systemmodule where MNO=#{mno}
+	</delete>
+	
+	<update id="update" flushCache="true">
+		update systemmodule set MNO=#{mno},MNAME=#{mname}
+		where  MNO=#{mno}
+	</update>
+
+	<select id="selectByNo" resultMap="ModuleResultMap">
+		select  * from systemmodule
+		where  MNO=#{mno}
+	</select>
+	
+	<select id="selectListByAll" resultMap="ModuleResultMap">
+		select * from systemmodule
+	</select>
+	
+	<select id="selectListByAllWithCollectionBySNestedSelect" resultMap="ModuleResultMapWithCollectionByNestedSelect">
+		select * from systemmodule
+	</select>
+	
+	<select id="selectListByAllWithCollectionBySNestedResultMap" resultMap="ModuleResultMapWithCollectionByNestedResultMap">	
+		select a.*,b.* from systemfunction a inner join systemmodule b
+		on a.MNO=b.MNO
+	</select>
+	
+<!-- 	//取所有模块个数 -->
+<!-- 	public int selectCountByAll() throws Exception; -->
+	<select id="selectCountByAll" resultMap="ModuleResultMap">
+		select IFNULL(count(MNO),0)) from systemmodule
+	</select>
+	
+<!-- 	//取指定角色的模块列表 -->
+<!-- 	public List<ModuleModel > selectListWithRole() throws Exception; -->
+	<select id="selectListWithRole" >
+		
+	</select>
+	
+<!-- 	//取指定模块和角色的关联个数，用于业务层判断角色对此模块是否有权限 -->
+<!-- 	public int selectCountWithRole() throws Exception; -->
+	<select id="selectCountWithRole" >
+		
+	</select>
+	
+</mapper>
