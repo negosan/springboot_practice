@@ -1,2 +1,2 @@
 # springboot_practice
-项目练习
+个人项目练习
