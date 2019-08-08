@@ -1,6 +1,7 @@
 package com.neusoft.busmis.security.controller;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,11 +36,17 @@ public class UserAPIController {
 	 * }
 	 * 
 	 */
+	@RequestMapping("/list")
+	public List<UserModel> getUsers() throws Exception{
+		return us.selectListByAll();
+	}
 	
 	@RequestMapping("/get")
 	public UserModel getUser(String userid) throws Exception{
 		return us.selectById(userid);
 	}
+	
+	
 	
 	@RequestMapping(path="/get01/{userid}",method = {RequestMethod.POST,RequestMethod.GET})
 	public ResponseEntity<UserModel> getUser01(@PathVariable String userid)  throws Exception{

@@ -6,6 +6,7 @@ import java.util.List;
 import javax.management.relation.RoleList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,9 @@ public class UserServiceImpl implements IUserService {
 	@Autowired
 	private IUserDao userDao=null ;
 
+	
+	@Value("${server.port}")
+	private String port = null;
 	/*
 	 * public void setUserDao(IUserDao userDao) { this.userDao = userDao; }
 	 */
@@ -106,7 +110,7 @@ public class UserServiceImpl implements IUserService {
 
 	@Override
 	public List<UserModel> selectListByAll() throws Exception {
-		
+		System.out.println("实例启动端口："+port);
 		return userDao.selectListByAll();
 	}
 	
